@@ -53,8 +53,7 @@ namespace ArduinoGuiProject
                             double.TryParse(tempStr, out tempDbl);
                             double.TryParse(humStr, out humDbl);
 
-
-                            dateTime = $"{DateTime.Now.Hour}:{DateTime.Now.Minute}.{DateTime.Now.Second}";
+                            dateTime = DateTime.Now.ToString("HH:mm.ss");
 
                             tempStr = String.Format("{0:0.0}", tempDbl);
                             humStr = String.Format("{0:0.0}", humDbl);

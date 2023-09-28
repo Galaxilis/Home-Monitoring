@@ -41,7 +41,9 @@ namespace ArduinoGuiProject
         public static string returnData2 = "";  //string til modtaget data
 
         //Set up camera and face recognition
-
+        private Capture videoCapture;
+        private Image<Bgr, Byte> currentFrame = null;
+        bool camIsOn = false;
 
         bool TL = true;
         bool appRunning = false;
@@ -60,6 +62,11 @@ namespace ArduinoGuiProject
         private void HomeMonitoring_FormClosed(object sender, FormClosedEventArgs e)
         {
             StopNetwork();
+            if (camIsOn == true)
+            {
+                videoCapture.Dispose();
+                videoCapture.Stop();
+            }
             Application.Exit();                 //Exit af hele programmet
         }
 
@@ -132,6 +139,18 @@ namespace ArduinoGuiProject
                     {
                         case "M":
                             TxtMotionDetected.Text = "TRUE";
+
+                            if (camIsOn == false)
+                            {
+                                if (videoCapture == null)
+                                {
+                                    videoCapture = new Capture(0);
+                                }
+                                videoCapture.ImageGrabbed += ProcessFrame;
+                                videoCapture.Start();
+                            }
+
+                            camIsOn = true;
                             returnData0 = null;
                             returnData1 = null;
                             returnData2 = null;
@@ -139,6 +158,20 @@ namespace ArduinoGuiProject
 
                         case "m":
                             TxtMotionDetected.Text = "FALSE";
+
+                            if (camIsOn == true)
+                            {
+                                if (videoCapture != null)
+                                {
+                                    videoCapture.Stop();
+                                    videoCapture.Dispose();
+                                    videoCapture = null;
+                                    CameraBox.Image = null;
+                                }
+
+                            }
+
+                            camIsOn = false;
                             returnData0 = null;
                             returnData1 = null;
                             returnData2 = null;
@@ -155,7 +188,7 @@ namespace ArduinoGuiProject
             IPEndPoint ip = new IPEndPoint((long)Convert.ToDouble(IPL), Convert.ToInt16(PortL));//Variable ip = IP og Port
             Byte[] receiveBytes = UDPListener.Receive(ref ip);      //Modtager data fra Arduino i et Byte Array 
             DataTmp = Encoding.ASCII.GetString(receiveBytes);       //Fra Byte til String 
-            
+
             reData = DataTmp;
         }
 
@@ -204,6 +237,20 @@ namespace ArduinoGuiProject
             {
                 FormDATA FD = new FormDATA();
                 FD.Show();
+            }
+        }
+
+        private void ProcessFrame(object sender, EventArgs e)
+        {
+            try
+            {
+
+                Mat frame = new Mat();
+                videoCapture.Retrieve(frame);
+                CameraBox.Image = frame.ToImage<Bgr, byte>().Bitmap;
+            } catch (Exception)
+            {
+                return;
             }
         }
     }
