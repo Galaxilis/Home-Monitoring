@@ -9,7 +9,7 @@
 
 //UDP mac address, IP address, and port number
 byte MAC[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED }; // Mac address of the Arduino
-IPAddress IPArduino(10, 1, 1, 150); // Aruino IP address
+IPAddress IPArduino(10, 1, 1, 150); // Arduino IP address
 IPAddress IPGUI(10, 1, 1, 10); // GUI IP address
 unsigned int UDPPort = 8080; // Router port used for communication
 
@@ -88,12 +88,12 @@ void loop() {
   Udp.read(packetBuffer, UDP_TX_PACKET_MAX_SIZE);
   Tmp = packetBuffer;
 
-  commaIndex = Tmp.indexOf(',');  //Deler Tmp ved hvert komma
+  commaIndex = Tmp.indexOf(',');  //Splits Tmp at every comma
   secondCommaIndex = Tmp.indexOf(',', commaIndex + 1);
   Tmp1 = Tmp.substring(0, commaIndex);
   Tmp2 = Tmp.substring(commaIndex + 1, secondCommaIndex);
 
-  //---------------------------SEND DATA TIL GUI---------------------------
+  //---------------------------SEND DATA TO GUI---------------------------
   unsigned long currentMillis = millis();
 
   if (currentMillis - previousMillis >= interval) {
@@ -118,7 +118,7 @@ void loop() {
     Udp.endPacket();
   }
 
-  //--------------------------MODTAG DATA FRA HUSKY--------------------------
+  //--------------------------RECEIVE DATA FROM HUSKYLENS--------------------------
   if (husky.available()) {
     HUSKYLENSResult result = husky.read();
     printResult(result);
@@ -126,13 +126,13 @@ void loop() {
 
 
 
-  //---------------------------MODTAG DATA FRA GUI---------------------------
+  //---------------------------RECEIVE DATA FROM GUI---------------------------
   if (Tmp1 == "C") {
-    delay(4);  //Delay for at Arduino kan følge med, kan være nul på feks. DUE
+    delay(4);  //added a delay so the Arduino can keep up with the speed, Can be set to 0 if using an Arduino DUE for multi-processing.
 
-    Udp.beginPacket(IPGUI, UDPPort);  //Starter UDP med IP og local port
-    Udp.print("C," + Tmp2 + ",");     //Sender String med protocol UDP
-    Udp.endPacket();                  //Stopper UDP
+    Udp.beginPacket(IPGUI, UDPPort);  //Initialize UDP with IP and local port
+    Udp.print("C," + Tmp2 + ",");     //Send String with protocol UDP
+    Udp.endPacket();                  //Stop UDP
 
     Blink = 0;
   } else if (Tmp1 == "Stop") {
